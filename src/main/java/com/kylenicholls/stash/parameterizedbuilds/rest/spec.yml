@@ -1,10 +1,12 @@
-openapi: 3.0.0
+openapi: "3.0.0"
+
 info:
   title: Parameterized Builds API
   description: >
     Rest Api for handling data stored by the Parameter Builds
     for Jenkins plugin
-  version: 1.0
+  version: "1.0"
+
 
 paths:
   /global/servers:
@@ -227,6 +229,84 @@ paths:
         '5XX':
           $ref: '#/components/responses/Unexpected'
 
+  /projects/{projectKey}/repos/{repoSlug}/jobs:
+    get:
+      summary: Get all jobs defined for a repository
+      parameters:
+        - name: projectKey
+          in: path
+          description: unique key for given project
+          required: true
+          schema:
+            type: string
+        - name: repoSlug
+          in: path
+          description: unique slug for repository
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: A JSON array of job objects
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Job'
+        '404':
+          description: >
+            Could not find job settings for given repo.
+            Either repo doesn't exist or no settings defined.
+        '403':
+          $ref: '#/components/responses/Unauthorized'
+        '5XX':
+          $ref: '#/components/responses/Unexpected'
+  
+  /projects/{projectKey}/repos/{repoSlug}/jobs/{jobId}:
+    get:
+      summary: Get job with given id defined for a repository
+      description: >
+        Returns job settings corresponding to the given id. While this
+        id will be unique for the currently specified jobs, ids can
+        change when new jobs are created or removed.
+      parameters:
+        - name: projectKey
+          in: path
+          description: unique key for given project
+          required: true
+          schema:
+            type: string
+        - name: repoSlug
+          in: path
+          description: unique slug for repository
+          required: true
+          schema:
+            type: string
+        - name: jobId
+          in: path
+          description: id for desired job
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: A JSON object for returned job
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Job'
+        '400':
+          description: jobId invalid
+        '404':
+          description: >
+            Could not find job settings for given repo.
+            Either repo doesn't exist or no settings defined.
+        '403':
+          $ref: '#/components/responses/Unauthorized'
+        '5XX':
+          $ref: '#/components/responses/Unexpected'
+
 
 components:
   schemas:
@@ -254,7 +334,44 @@ components:
         - scope
         - root_token_enabled
         - csrf_enabled
-  
+    Job:
+      type: object
+      properties:
+        id:
+          type: integer
+        jobName:
+          type: string
+        jenkinsServer:
+          type: string
+        isTag:
+          type: boolean
+        isPipeline:
+          type: boolean
+        triggers:
+          type: array
+          items:
+            type: string
+        token:
+          type: string
+        buildParameters:
+          type: array
+          items:
+            type: object
+            properties:
+              name:
+                type: string
+              value:
+                type: string
+        branchRegex:
+          type: string
+        pathRegex:
+          type: string
+        prDestRegex:
+          type: string
+        permissions:
+          type: string
+
+
   responses:
     Unauthorized:
       description: Unauthorized

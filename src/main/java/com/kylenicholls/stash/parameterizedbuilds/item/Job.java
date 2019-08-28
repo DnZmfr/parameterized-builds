@@ -115,6 +115,30 @@ public class Job {
         return map;
     }
 
+    public Map<String, Object> rawMap(){
+        return new HashMap<String, Object>() {{
+            put("id", jobId);
+            put("jobName", jobName);
+            put("jenkinsServer", jenkinsServer);
+            put("isTag", isTag);
+            put("triggers", triggers.stream()
+                    .map(Trigger::toString)
+                    .collect(Collectors.toList()));
+            put("token", token);
+            put("buildParameters", buildParameters.stream()
+                    .map(e -> new HashMap<String, String>() {{
+                        put("name", e.getKey());
+                        put("value", e.getValue().toString());
+                    }})
+                    .collect(Collectors.toList()));
+            put("branchRegex", branchRegex);
+            put("pathRegex", pathRegex);
+            put("permissions", permissions);
+            put("prDestRegex", prDestRegex);
+            put("isPipeline", isPipeline);
+        }};
+    }
+
     public static class JobBuilder {
         private final int jobId;
         private String jobName;
